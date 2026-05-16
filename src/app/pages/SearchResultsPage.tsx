@@ -1,141 +1,209 @@
+import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import { ArrowLeft, ChevronDown, Clock, ShieldCheck, Package, Zap, Radio, Settings, Gauge, Wind, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  Gauge,
+  Lightbulb,
+  Package,
+  Search,
+  Settings,
+  Sparkles,
+  Zap,
+} from "lucide-react";
+import { products as productCatalog } from "../../data/products";
+
+const categoryIcons = {
+  "Engine Parts": Settings,
+  "Body Parts": Package,
+  Interior: Gauge,
+  Electrical: Zap,
+  Lighting: Lightbulb,
+};
+
+function uniqueOptions<T extends string | number>(values: T[]) {
+  return Array.from(new Set(values)).sort((a, b) => String(a).localeCompare(String(b)));
+}
 
 export function SearchResultsPage() {
   const [searchParams] = useSearchParams();
   const aiQuery = searchParams.get("ai") ?? "";
+  const conditionParam = searchParams.get("condition");
+  const conditionFilter =
+    conditionParam === "new" ? "New" : conditionParam === "used" ? "Used" : "";
 
-  const categories = [
-    { name: "Engine Parts", icon: Settings },
-    { name: "Body Parts", icon: Package },
-    { name: "Brakes", icon: Zap },
-    { name: "Suspension", icon: Wind },
-    { name: "Electrical", icon: Radio },
-    { name: "Interior", icon: Gauge },
-  ];
+  const [searchTerm, setSearchTerm] = useState(aiQuery);
+  const [selectedMake, setSelectedMake] = useState("");
+  const [selectedModel, setSelectedModel] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
-  const products = [
-    {
-      id: 1,
-      name: "Honda Civic Headlight Assembly",
-      compatibility: "Civic 2016-2020",
-      price: "Rs 8,500",
-      condition: "New",
-      delivery: "2-4 hours",
-      location: "Saddar, Rawalpindi",
-      seller: "Auto Parts Hub",
-      verified: true,
-      image: "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=400&h=300&fit=crop",
-    },
-    {
-      id: 2,
-      name: "Honda Civic Front Bumper",
-      compatibility: "Civic 2016-2020",
-      price: "Rs 15,000",
-      condition: "Refurbished",
-      delivery: "Same day",
-      location: "Saddar, Rawalpindi",
-      seller: "Parts Valley",
-      verified: true,
-      image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400&h=300&fit=crop",
-    },
-    {
-      id: 3,
-      name: "Honda Civic Side Mirror (Right)",
-      compatibility: "Civic 2016-2020",
-      price: "Rs 4,200",
-      condition: "New",
-      delivery: "Next day",
-      location: "Raja Bazaar, Rawalpindi",
-      seller: "Saddar Motors",
-      verified: false,
-      image: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
-    },
-    {
-      id: 4,
-      name: "Honda Civic Brake Pads (Set of 4)",
-      compatibility: "Civic 2016-2020",
-      price: "Rs 3,500",
-      condition: "New",
-      delivery: "2-4 hours",
-      location: "Saddar, Rawalpindi",
-      seller: "Auto Parts Hub",
-      verified: true,
-      image: "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=400&h=300&fit=crop",
-    },
-  ];
+  const conditionProducts = useMemo(
+    () =>
+      conditionFilter
+        ? productCatalog.filter((product) => product.condition === conditionFilter)
+        : productCatalog,
+    [conditionFilter],
+  );
+
+  const makes = useMemo(
+    () => uniqueOptions(conditionProducts.map((product) => product.make)),
+    [conditionProducts],
+  );
+
+  const models = useMemo(
+    () =>
+      uniqueOptions(
+        conditionProducts
+          .filter((product) => !selectedMake || product.make === selectedMake)
+          .map((product) => product.model),
+      ),
+    [conditionProducts, selectedMake],
+  );
+
+  const years = useMemo(
+    () =>
+      uniqueOptions(
+        conditionProducts
+          .filter((product) => !selectedMake || product.make === selectedMake)
+          .filter((product) => !selectedModel || product.model === selectedModel)
+          .map((product) => product.year),
+      ),
+    [conditionProducts, selectedMake, selectedModel],
+  );
+
+  const categories = useMemo(
+    () => uniqueOptions(conditionProducts.map((product) => product.category)),
+    [conditionProducts],
+  );
+
+  const filteredProducts = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+
+    return conditionProducts.filter((product) => {
+      const matchesSearch =
+        !query ||
+        product.name.toLowerCase().includes(query) ||
+        product.category.toLowerCase().includes(query) ||
+        product.description.toLowerCase().includes(query);
+
+      return (
+        matchesSearch &&
+        (!selectedMake || product.make === selectedMake) &&
+        (!selectedModel || product.model === selectedModel) &&
+        (!selectedYear || String(product.year) === selectedYear) &&
+        (!selectedCategory || product.category === selectedCategory)
+      );
+    });
+  }, [conditionProducts, searchTerm, selectedMake, selectedModel, selectedYear, selectedCategory]);
+
+  const pageTitle = conditionFilter ? `${conditionFilter} Parts` : "Browse Parts";
+
+  function clearFilters() {
+    setSearchTerm("");
+    setSelectedMake("");
+    setSelectedModel("");
+    setSelectedYear("");
+    setSelectedCategory("");
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-3 mb-4">
-            <Link to="/" className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition">
-              <ArrowLeft className="w-5 h-5" />
+      <header className="sticky top-0 z-50 border-b bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+          <div className="mb-4 flex items-center gap-3">
+            <Link to="/" className="-ml-2 rounded-lg p-2 transition hover:bg-gray-100">
+              <ArrowLeft className="h-5 w-5" />
             </Link>
-            <h1 className="text-xl font-bold text-gray-900">Search Parts</h1>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">{pageTitle}</h1>
+              <p className="text-sm text-gray-600">
+                Search mock inventory by part, make, model, year, and category.
+              </p>
+            </div>
           </div>
 
-          {/* Search Input */}
-          <div className="mb-4">
+          <div className="relative mb-4">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search for a part..."
-              defaultValue={aiQuery}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500 transition"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search by part name or category..."
+              className="w-full rounded-xl border-2 border-gray-200 py-3 pl-12 pr-4 text-gray-900 transition focus:border-emerald-500 focus:outline-none"
             />
           </div>
 
-          {/* Car Selector */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="relative">
-              <select className="w-full appearance-none px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-emerald-500 focus:bg-white transition cursor-pointer">
-                <option value="">Make</option>
-                <option>Honda</option>
-                <option>Toyota</option>
-                <option>Suzuki</option>
-                <option>Daihatsu</option>
-                <option>Nissan</option>
-                <option>Hyundai</option>
-                <option>KIA</option>
+              <select
+                value={selectedMake}
+                onChange={(event) => {
+                  setSelectedMake(event.target.value);
+                  setSelectedModel("");
+                  setSelectedYear("");
+                }}
+                className="w-full cursor-pointer appearance-none rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 font-medium text-gray-900 transition focus:border-emerald-500 focus:bg-white focus:outline-none"
+              >
+                <option value="">All Makes</option>
+                {makes.map((make) => (
+                  <option key={make} value={make}>
+                    {make}
+                  </option>
+                ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             </div>
 
             <div className="relative">
-              <select className="w-full appearance-none px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-emerald-500 focus:bg-white transition cursor-pointer">
-                <option value="">Model</option>
-                <option>Civic</option>
-                <option>City</option>
-                <option>Corolla</option>
-                <option>Cultus</option>
-                <option>Alto</option>
+              <select
+                value={selectedModel}
+                onChange={(event) => {
+                  setSelectedModel(event.target.value);
+                  setSelectedYear("");
+                }}
+                className="w-full cursor-pointer appearance-none rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 font-medium text-gray-900 transition focus:border-emerald-500 focus:bg-white focus:outline-none"
+              >
+                <option value="">All Models</option>
+                {models.map((model) => (
+                  <option key={model} value={model}>
+                    {model}
+                  </option>
+                ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             </div>
 
             <div className="relative">
-              <select className="w-full appearance-none px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-emerald-500 focus:bg-white transition cursor-pointer">
-                <option value="">Year</option>
-                <option>2024</option>
-                <option>2023</option>
-                <option>2022</option>
-                <option>2021</option>
-                <option>2020</option>
-                <option>2019</option>
-                <option>2018</option>
-                <option>2017</option>
+              <select
+                value={selectedYear}
+                onChange={(event) => setSelectedYear(event.target.value)}
+                className="w-full cursor-pointer appearance-none rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 font-medium text-gray-900 transition focus:border-emerald-500 focus:bg-white focus:outline-none"
+              >
+                <option value="">All Years</option>
+                {years.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             </div>
+
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="rounded-xl border-2 border-gray-200 bg-white px-4 py-3 font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-100"
+            >
+              Clear Filters
+            </button>
           </div>
         </div>
       </header>
 
       {aiQuery && (
-        <div className="bg-emerald-50 border-b border-emerald-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="border-b border-emerald-100 bg-emerald-50">
+          <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-3 rounded-xl border border-emerald-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600">
@@ -143,11 +211,9 @@ export function SearchResultsPage() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-emerald-700">AI Part Finder</p>
-                  <h2 className="font-semibold text-gray-900">
-                    Searching for: {aiQuery}
-                  </h2>
+                  <h2 className="font-semibold text-gray-900">Searching for: {aiQuery}</h2>
                   <p className="text-sm text-gray-600">
-                    Showing likely matches. Use make, model, and year filters to narrow it down.
+                    These are mock matches. Refine by make, model, year, or category.
                   </p>
                 </div>
               </div>
@@ -162,76 +228,113 @@ export function SearchResultsPage() {
         </div>
       )}
 
-      {/* Categories */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">Categories</h2>
-          <div className="grid grid-cols-3 gap-3">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <section className="mb-5">
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="font-semibold text-gray-900">Categories</h2>
+            <p className="text-sm font-medium text-gray-600">
+              {filteredProducts.length} of {conditionProducts.length} parts shown
+            </p>
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            <button
+              type="button"
+              onClick={() => setSelectedCategory("")}
+              className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                selectedCategory
+                  ? "border-gray-200 bg-white text-gray-700 hover:bg-gray-100"
+                  : "border-emerald-600 bg-emerald-600 text-white"
+              }`}
+            >
+              All Categories
+            </button>
             {categories.map((category) => {
-              const Icon = category.icon;
+              const Icon = categoryIcons[category];
               return (
                 <button
-                  key={category.name}
-                  className="flex flex-col items-center gap-2 p-3 bg-gray-50 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 border-2 border-transparent transition"
+                  key={category}
+                  type="button"
+                  onClick={() => setSelectedCategory(category)}
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                    selectedCategory === category
+                      ? "border-emerald-600 bg-emerald-600 text-white"
+                      : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100"
+                  }`}
                 >
-                  <Icon className="w-6 h-6 text-gray-700" />
-                  <span className="text-xs font-medium text-gray-900 text-center">
-                    {category.name}
-                  </span>
+                  <Icon className="h-4 w-4" />
+                  {category}
                 </button>
               );
             })}
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Results Count */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <p className="text-sm font-medium text-gray-900">{products.length} parts found</p>
-      </div>
+        {filteredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {filteredProducts.map((product) => (
+              <Link
+                key={product.id}
+                to={`/product/${product.id}`}
+                className="overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="h-44 w-full object-cover"
+                />
+                <div className="p-4">
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-semibold leading-snug text-gray-900">
+                        {product.name}
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-600">
+                        {product.make} {product.model} {product.year}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      {product.condition}
+                    </span>
+                  </div>
 
-      {/* Product Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 space-y-3">
-        {products.map((product) => (
-          <Link
-            key={product.id}
-            to={`/product/${product.id}`}
-            className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition flex"
-          >
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-28 h-28 object-cover"
-            />
-            <div className="p-3 flex-1">
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <h3 className="font-medium text-gray-900 text-sm">
-                  {product.name}
-                </h3>
-                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-xs font-medium shrink-0">
-                  {product.condition}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 mb-1">{product.compatibility}</p>
-              <p className="text-lg font-bold text-emerald-600 mb-1">
-                {product.price}
-              </p>
-              <div className="flex items-center gap-2 text-xs text-gray-600 mb-1">
-                <Clock className="w-3 h-3" />
-                <span>{product.delivery}</span>
-                <span className="text-gray-400">•</span>
-                <span>{product.location}</span>
-              </div>
-              <div className="flex items-center gap-1 text-xs">
-                <span className="text-gray-600">{product.seller}</span>
-                {product.verified && (
-                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                )}
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+                  <p className="mb-4 line-clamp-2 text-sm text-gray-600">
+                    {product.description}
+                  </p>
+
+                  <div className="flex items-end justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-gray-500">
+                        {product.category}
+                      </p>
+                      <p className="mt-1 text-xl font-bold text-emerald-600">
+                        {product.price}
+                      </p>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-900">
+                      View details
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center">
+            <h2 className="text-xl font-semibold text-gray-900">No parts found</h2>
+            <p className="mx-auto mt-2 max-w-md text-gray-600">
+              Try changing the make, model, year, category, or search term to see more mock parts.
+            </p>
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="mt-5 rounded-xl bg-gray-900 px-5 py-3 font-semibold text-white transition hover:bg-gray-800"
+            >
+              Reset browsing
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
