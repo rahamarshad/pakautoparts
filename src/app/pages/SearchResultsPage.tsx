@@ -1,8 +1,10 @@
-import { Link } from "react-router";
-import { ArrowLeft, ChevronDown, Clock, ShieldCheck, Package, Wrench, Zap, Radio, Settings, Gauge, Wind } from "lucide-react";
-import { useState } from "react";
+import { Link, useSearchParams } from "react-router";
+import { ArrowLeft, ChevronDown, Clock, ShieldCheck, Package, Zap, Radio, Settings, Gauge, Wind, Sparkles } from "lucide-react";
 
 export function SearchResultsPage() {
+  const [searchParams] = useSearchParams();
+  const aiQuery = searchParams.get("ai") ?? "";
+
   const categories = [
     { name: "Engine Parts", icon: Settings },
     { name: "Body Parts", icon: Package },
@@ -80,6 +82,7 @@ export function SearchResultsPage() {
             <input
               type="text"
               placeholder="Search for a part..."
+              defaultValue={aiQuery}
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500 transition"
             />
           </div>
@@ -129,6 +132,35 @@ export function SearchResultsPage() {
           </div>
         </div>
       </header>
+
+      {aiQuery && (
+        <div className="bg-emerald-50 border-b border-emerald-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-col gap-3 rounded-xl border border-emerald-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600">
+                  <Sparkles className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-emerald-700">AI Part Finder</p>
+                  <h2 className="font-semibold text-gray-900">
+                    Searching for: {aiQuery}
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    Showing likely matches. Use make, model, and year filters to narrow it down.
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/request-part"
+                className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
+              >
+                Ask sellers to find it
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Categories */}
       <div className="bg-white border-b">

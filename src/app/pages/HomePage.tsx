@@ -1,7 +1,20 @@
-import { Link } from "react-router";
-import { ArrowRight, Package, RefreshCw, Zap, Wrench, Settings, Radio, Gauge } from "lucide-react";
+import { FormEvent, useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { ArrowRight, Package, RefreshCw, Search, Sparkles } from "lucide-react";
 
 export function HomePage() {
+  const navigate = useNavigate();
+  const [aiSearch, setAiSearch] = useState("");
+
+  function handleAiSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const query = aiSearch.trim();
+    if (!query) return;
+
+    navigate(`/search?ai=${encodeURIComponent(query)}`);
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Top Navigation Bar */}
@@ -68,6 +81,43 @@ export function HomePage() {
               </div>
             </div>
           </div>
+
+          {/* AI Part Finder */}
+          <form
+            onSubmit={handleAiSearch}
+            className="max-w-5xl mx-auto mb-8 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm"
+          >
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+              <div className="flex items-start gap-3 lg:w-64">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600">
+                  <Sparkles className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-gray-900">Ask AI to find your part</h2>
+                  <p className="text-sm text-gray-600">
+                    Describe the issue or part name
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-1 flex-col gap-3 sm:flex-row">
+                <input
+                  type="text"
+                  value={aiSearch}
+                  onChange={(event) => setAiSearch(event.target.value)}
+                  placeholder="e.g. right side mirror for 2018 Honda Civic"
+                  className="min-w-0 flex-1 rounded-xl border-2 border-gray-200 px-4 py-3 text-gray-900 outline-none transition focus:border-emerald-500"
+                />
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-5 py-3 font-semibold text-white transition hover:bg-gray-800"
+                >
+                  <Search className="h-5 w-5" />
+                  Find Parts
+                </button>
+              </div>
+            </div>
+          </form>
 
           {/* Part Type Selection - Main CTA */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-12">
