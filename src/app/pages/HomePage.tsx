@@ -24,13 +24,49 @@ export function HomePage() {
       {/* Hero Section */}
       <div className="bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-          <div className="max-w-4xl mx-auto text-center mb-16">
+          <div className="max-w-4xl mx-auto text-center mb-8">
             <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
               Find Car Parts in Pakistan
             </h1>
             <p className="text-xl text-gray-600">
               Fast delivery from local sellers across Rawalpindi, Islamabad & beyond
             </p>
+          </div>
+
+          {/* How It Works */}
+          <div className="max-w-4xl mx-auto mb-10">
+            <h2 className="text-lg font-semibold text-gray-900 text-center mb-5">
+              How It Works
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100">
+                  <span className="text-sm font-bold text-emerald-600">1</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Choose Type</h3>
+                  <p className="text-sm text-gray-600">New or used parts</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100">
+                  <span className="text-sm font-bold text-emerald-600">2</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Search & Filter</h3>
+                  <p className="text-sm text-gray-600">By car or category</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100">
+                  <span className="text-sm font-bold text-emerald-600">3</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Fast Delivery</h3>
+                  <p className="text-sm text-gray-600">Same-day or next-day</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Part Type Selection - Main CTA */}
@@ -92,50 +128,6 @@ export function HomePage() {
               Request a Part
             </Link>
           </p>
-        </div>
-      </div>
-
-      {/* How It Works */}
-      <div className="bg-gray-50 py-16 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            How It Works
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4">
-                <span className="text-2xl font-bold text-emerald-600">1</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Choose Type
-              </h3>
-              <p className="text-gray-600">
-                Select between new or used parts
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4">
-                <span className="text-2xl font-bold text-emerald-600">2</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Search & Filter
-              </h3>
-              <p className="text-gray-600">
-                Find parts by car model or category
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4">
-                <span className="text-2xl font-bold text-emerald-600">3</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Fast Delivery
-              </h3>
-              <p className="text-gray-600">
-                Get parts delivered same-day or next-day
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 
